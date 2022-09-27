@@ -22,8 +22,8 @@
     </tbody>
   </table>
   <div class="controls">
-  <button @click="prevPage">prev page</button>
-  <button @click="nextPage">next page</button>
+  <button @click="prevPage" :disabled=isPrevDisabled>prev page</button>
+  <button @click="nextPage" :disabled=isNextDisabled>next page</button>
   </div>
   </div>
 </template>
@@ -59,7 +59,7 @@ export default {
       ],
       filterText: '',
       itemsPerPage: 5,
-      page: 1
+      page: 1,
     }
   },
   methods: {
@@ -70,7 +70,6 @@ export default {
       this.ratingsInfo.sort((a, b) => a.rating < b.rating ? 1 : -1);
     },
     prevPage() {
-      if (this.page <= 1) return;
       this.page -= 1;
     },
     nextPage() {
@@ -81,7 +80,18 @@ export default {
   computed: {
     filteredFilms() {
       let filter = new RegExp(this.filterText, 'i')
-      return this.ratingsInfo.filter(el => el.title.match(filter)).slice((this.page - 1) * this.itemsPerPage, this.page * this.itemsPerPage)
+      return this.ratingsInfo.filter(el => el.title.match(filter)).slice((this.page - 1) * this.itemsPerPage, this.page * this.itemsPerPage);
+    },
+    isPrevDisabled() {
+      return this.page === 1 ? true : false
+    },
+    isNextDisabled() {
+      return this.filteredFilms.length < this.itemsPerPage ? true : false
+    },
+  },
+  watch: {
+    filterText() {
+      this.page = 1
     }
   }
 }
