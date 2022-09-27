@@ -14,7 +14,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr v-for="entry in filteredFilms" :key=entry>
+      <tr v-for="entry in slicedFilteredFilms" :key=entry>
         <td v-for="key in columns" :key=key>
           {{entry[key]}}
         </td>
@@ -22,8 +22,11 @@
     </tbody>
   </table>
   <div class="controls">
-  <button @click="prevPage" :disabled=isPrevDisabled>prev page</button>
-  <button @click="nextPage" :disabled=isNextDisabled>next page</button>
+    <button @click="prevPage" :disabled=isPrevDisabled>prev page</button>
+    <button @click="nextPage" :disabled=isNextDisabled>next page</button>
+  </div>
+  <div class="buttons">
+    <button v-for="num in numOfButtons" :key="num" @click="onSelectPage(num)">{{num}}</button>
   </div>
   </div>
 </template>
@@ -74,20 +77,29 @@ export default {
     },
     nextPage() {
       this.page += 1;
+    },
+    onSelectPage(page) {
+      this.page = page;
     }
   },
   // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
   computed: {
     filteredFilms() {
       let filter = new RegExp(this.filterText, 'i')
-      return this.ratingsInfo.filter(el => el.title.match(filter)).slice((this.page - 1) * this.itemsPerPage, this.page * this.itemsPerPage);
+      return this.ratingsInfo.filter(el => el.title.match(filter))
+    },
+    slicedFilteredFilms() {
+      return this.filteredFilms.slice((this.page - 1) * this.itemsPerPage, this.page * this.itemsPerPage);
     },
     isPrevDisabled() {
       return this.page === 1 ? true : false
     },
     isNextDisabled() {
-      return this.filteredFilms.length < this.itemsPerPage ? true : false
+      return this.slicedFilteredFilms.length < this.itemsPerPage ? true : false
     },
+    numOfButtons() {
+      return Math.ceil(this.filteredFilms.length / this.itemsPerPage)
+    }
   },
   watch: {
     filterText() {
@@ -149,5 +161,9 @@ button {
 	display: flex;
 	justify-content: space-between;
 	margin-top: 10px;
+}
+
+.buttons {
+  margin-top: 10px
 }
 </style>
