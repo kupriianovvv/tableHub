@@ -48,6 +48,7 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: 'table-table',
   data() {
@@ -66,7 +67,7 @@ export default {
         { Date: "15:06:2011", Name: "Kursk", Number: 20, Distance: 2},
         { Date: "16:04:2011", Name: "PifPaf", Number: 16, Distance: 33},
         { Date: "13:03:2011", Name: "Luga", Number: 13, Distance: 56},
-        { Date: "16:12:2011", Name: "Yakutsks", Number: 0, Distance: 12},
+        { Date: "16:12:2011", Name: "Yakutsks", Number: 0, Distance: 12}, /*TEST*/
       ], 
       filterText: '',
       itemsPerPage: 5,
@@ -132,6 +133,20 @@ export default {
   watch: {
     filterText() {
       this.page = 1
+    }
+  },
+  created: async function() {
+   try {
+    const response = await axios.get("http://localhost:3000");
+    const data = response.data.map(item => {
+      item.Date = item.Date.slice(0,10)
+      return item
+    })
+    console.log(data)
+    console.log(typeof data[0].Date)
+    this.ratingsInfo = data;
+    } catch(err) {
+      console.log(err)
     }
   }
 }
