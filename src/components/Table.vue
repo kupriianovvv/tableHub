@@ -1,10 +1,22 @@
 <template>
   <div class="table">
-  <h3>Search a title: <input v-model="filterText" /></h3>
-  <h3>Sort titles by: 
-    <button @click="sortLowest">Lowest Rated</button>
-    <button @click="sortHighest">Highest Rated</button>
-  </h3>
+    <div class="sortings">
+      <input v-model="filterText" />
+      <select v-model="sortingField">
+        <option value="Name">Name</option>
+        <option value="Number">Number</option>
+        <option value="Distance">Distance</option>
+      </select>
+      <select v-model="sortingOrder">
+        <option value="ascending">Ascending</option>
+        <option value="descending">Descending</option>
+      </select>
+      <select v-model="filteringOption">
+        <option value="contains">Contains</option>
+        <option value="equals">Equals</option>
+      </select>
+      <button @click="sort">Sort</button>
+    </div>
   <table>
     <thead>
       <tr>
@@ -36,42 +48,28 @@ export default {
   name: 'table-table',
   data() {
     return {
-      columns: ["title", "rating"],
+      sortingField: "Name",
+      sortingOrder: "ascending",
+      filteringOption: "contains",
+      columns: ["Date", "Name", "Number", "Distance"],
       ratingsInfo: [
-        { title: `White Chicks`, rating: 82 },
-        { title: `Grey's Anatomy`, rating: 98 },
-        { title: `Prison Break`, rating: 98 },
-        { title: `How I Met Your Mother`, rating: 94 },
-        { title: `Supernatural`, rating: 95 },
-        { title: `Breaking Bad`, rating: 97 },
-        { title: `The Vampire Diaries`, rating: 91 },
-        { title: `The Walking Dead`, rating: 98 },
-        { title: `Pretty Little Liars`, rating: 96 },
-        { title: `Once Upon a Time`, rating: 98 },
-        { title: `Sherlock`, rating: 95 },
-        { title: `Death Note`, rating: 77 },
-        { title: `Naruto`, rating: 88 },
-        { title: `Arrow`, rating: 96 },
-        { title: `Black Mirror`, rating: 80 },
-        { title: `The Originals`, rating: 74 },
-        { title: `The 100`, rating: 97 },
-        { title: `Masha and the Bear`, rating: 81 },
-        { title: `Hunter X Hunter`, rating: 57 },
-        { title: `Marvel's Luke Cage`, rating: 95 },
-        { title: `Marvel's Iron Fist`, rating: 98 }
-      ],
+        { Date: "10:01:2011", Name: "Saint Petersburg", Number: 10, Distance: 10},
+        { Date: "11:01:2011", Name: "Moscow", Number: 12, Distance: 14},
+        { Date: "14:01:2011", Name: "Saratov", Number: 15, Distance: 12},
+        { Date: "12:01:2011", Name: "Novosibirsk", Number: 7, Distance: 20},
+        { Date: "10:03:2011", Name: "Tomsk", Number: 12, Distance: 39},
+        { Date: "15:01:2011", Name: "Tula", Number: 13, Distance: 45},
+        { Date: "15:06:2011", Name: "Kursk", Number: 20, Distance: 2},
+        { Date: "16:04:2011", Name: "PifPaf", Number: 16, Distance: 33},
+        { Date: "13:03:2011", Name: "Luga", Number: 13, Distance: 56},
+        { Date: "16:12:2011", Name: "Yakutsks", Number: 0, Distance: 15},
+      ], 
       filterText: '',
       itemsPerPage: 5,
       page: 1,
     }
   },
   methods: {
-    sortLowest() {
-      this.ratingsInfo.sort((a, b) => a.rating > b.rating ? 1 : -1);
-    },
-    sortHighest() {
-      this.ratingsInfo.sort((a, b) => a.rating < b.rating ? 1 : -1);
-    },
     prevPage() {
       this.page -= 1;
     },
@@ -80,26 +78,52 @@ export default {
     },
     onSelectPage(page) {
       this.page = page;
+    },
+    sort() {
+
+      const sortingField = this.sortingField;
+      const sortingOrder = this.sortingOrder;
+      const type =  typeof this.ratingsInfo[0][sortingField];
+      console.log(sortingField, sortingOrder, type)
+      this.page = 1;
+
+      if (type === "string") {
+        if (sortingOrder === "ascending") {
+          this.ratingsInfo.sort((a, b) => a[sortingField] < b[sortingField] ? -1 : 1)
+        } else {
+          this.ratingsInfo.sort((a, b) => a[sortingField] < b[sortingField] ? 1 : -1)
+        }
+      } else {
+        if (sortingOrder === "ascending") {
+          this.ratingsInfo.sort((a, b) => a[sortingField] - b[sortingField])
+        } else {
+          this.ratingsInfo.sort((a, b) => b[sortingField] - a[sortingField])
+        }
+      }
+      
     }
   },
   // [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
   computed: {
     filteredFilms() {
-      let filter = new RegExp(this.filterText, 'i')
-      return this.ratingsInfo.filter(el => el.title.match(filter))
+      let filter = new RegExp(this.filterText, 'i');
+      const sortingField = this.sortingField;
+      const type = typeof this.ratingsInfo[0][sortingField];
+
+      return type === "string" ?  this.ratingsInfo.filter(el => el[this.sortingField].match(filter)) : this.ratingsInfo.filter(el => el[sortingField] === Number(this.filterText))
     },
     slicedFilteredFilms() {
       return this.filteredFilms.slice((this.page - 1) * this.itemsPerPage, this.page * this.itemsPerPage);
+    },
+    numOfButtons() {
+      return Math.ceil(this.filteredFilms.length / this.itemsPerPage)
     },
     isPrevDisabled() {
       return this.page === 1 ? true : false
     },
     isNextDisabled() {
-      return this.slicedFilteredFilms.length < this.itemsPerPage ? true : false
+      return this.page === this.numOfButtons ? true : false
     },
-    numOfButtons() {
-      return Math.ceil(this.filteredFilms.length / this.itemsPerPage)
-    }
   },
   watch: {
     filterText() {
@@ -166,4 +190,11 @@ button {
 .buttons {
   margin-top: 10px
 }
+
+.sortings {
+  display: flex;
+  align-items: center
+}
+
+
 </style>
