@@ -1,21 +1,24 @@
 <template>
   <div class="table">
     <div class="sortings">
-      <input v-model="filterText" />
-      <select v-model="sortingField">
+      <label for="sortingField">sorting Field</label>
+      <select v-model="sortingField" id="sortingField">
         <option value="Name">Name</option>
         <option value="Number">Number</option>
         <option value="Distance">Distance</option>
       </select>
-      <select v-model="sortingOrder">
+      <label for="sortingOrder">sorting Order</label>
+      <select v-model="sortingOrder" id="sortingOrder">
         <option value="ascending">Ascending</option>
         <option value="descending">Descending</option>
       </select>
-      <select v-model="filteringOption">
-        <option value="contains">Contains</option>
-        <option value="equals">Equals</option>
+      <label for="filteringField">Filtering field</label>
+      <select v-model="filteringField" id="filteringField">
+        <option value="Name">Name</option>
+        <option value="Number">Number</option>
+        <option value="Distance">Distance</option>
       </select>
-      <button @click="sort">Sort</button>
+      <button @click="sort" id="sort">Sort</button>
     </div>
   <table>
     <thead>
@@ -35,6 +38,7 @@
   </table>
   <div class="controls">
     <button @click="prevPage" :disabled=isPrevDisabled>prev page</button>
+    <input v-model="filterText" />
     <button @click="nextPage" :disabled=isNextDisabled>next page</button>
   </div>
   <div class="buttons">
@@ -50,7 +54,7 @@ export default {
     return {
       sortingField: "Name",
       sortingOrder: "ascending",
-      filteringOption: "contains",
+      filteringField: "Name",
       columns: ["Date", "Name", "Number", "Distance"],
       ratingsInfo: [
         { Date: "10:01:2011", Name: "Saint Petersburg", Number: 10, Distance: 10},
@@ -62,7 +66,7 @@ export default {
         { Date: "15:06:2011", Name: "Kursk", Number: 20, Distance: 2},
         { Date: "16:04:2011", Name: "PifPaf", Number: 16, Distance: 33},
         { Date: "13:03:2011", Name: "Luga", Number: 13, Distance: 56},
-        { Date: "16:12:2011", Name: "Yakutsks", Number: 0, Distance: 15},
+        { Date: "16:12:2011", Name: "Yakutsks", Number: 0, Distance: 12},
       ], 
       filterText: '',
       itemsPerPage: 5,
@@ -107,10 +111,10 @@ export default {
   computed: {
     filteredFilms() {
       let filter = new RegExp(this.filterText, 'i');
-      const sortingField = this.sortingField;
-      const type = typeof this.ratingsInfo[0][sortingField];
+      const filteringField = this.filteringField;
+      const type = typeof this.ratingsInfo[0][filteringField];
 
-      return type === "string" ?  this.ratingsInfo.filter(el => el[this.sortingField].match(filter)) : this.ratingsInfo.filter(el => el[sortingField] === Number(this.filterText))
+      return type === "string" ?  this.ratingsInfo.filter(el => el[this.filteringField].match(filter)) : this.ratingsInfo.filter(el => el[filteringField] === Number(this.filterText))
     },
     slicedFilteredFilms() {
       return this.filteredFilms.slice((this.page - 1) * this.itemsPerPage, this.page * this.itemsPerPage);
@@ -172,7 +176,7 @@ tr:last-child td {
   }
 
 
-button {
+button, select {
   background: orangered;
   border: none;
   padding: 5px 8px;
@@ -193,8 +197,23 @@ button {
 
 .sortings {
   display: flex;
-  align-items: center
+  align-items: center;
+  flex-wrap: wrap
 }
 
+label {
+  margin-right: 10px
+}
 
+.sortings * {
+  margin: 5px 3px
+}
+
+.sortings label {
+  font-weight: bold
+}
+
+#sort {
+  width: 100%
+}
 </style>
